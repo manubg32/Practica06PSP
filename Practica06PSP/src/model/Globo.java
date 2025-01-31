@@ -20,41 +20,48 @@ public class Globo extends Thread {
 
     @Override
     public void run() {
-        while (corriendo) {
+        while (true) {
             synchronized (lock) {
-                while (pausado) { // Si está pausado, esperar
+                while (pausado) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        return; // Salir del hilo si es interrumpido
                     }
                 }
+
+                if (!corriendo) break; // ✅ Salir del hilo inmediatamente
             }
 
             y -= 3; // Mover el globo hacia arriba
-            if (y < 0) y = 700; // Reiniciar cuando llegue arriba
 
             try {
                 Thread.sleep((int) (Math.random() * 25 + 25)); // Simular velocidad
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return; // Salir del hilo si es interrumpido
             }
+
+            if (!corriendo) break; //  Verificar nuevamente si debe detenerse
         }
     }
 
-    // Método para detener completamente el hilo
+    //  Método para detener el hilo completamente
     public void detener() {
-        corriendo = false;
+        synchronized (lock) {
+            corriendo = false;
+            pausado = false; // Asegurar que no quede en pausa
+            lock.notifyAll();// Despertar cualquier hilo pausado para que termine
+        }
     }
 
-    // Método para pausar el hilo
+    //  Método para pausar el hilo sin detenerlo completamente
     public void pausar() {
         synchronized (lock) {
             pausado = true;
         }
     }
 
-    // Método para reanudar el hilo
+    //  Método para reanudar el hilo pausado
     public void reanudar() {
         synchronized (lock) {
             pausado = false;

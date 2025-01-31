@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class PanelDeCarrera extends JPanel {
@@ -19,9 +20,11 @@ class PanelDeCarrera extends JPanel {
     private long lastTime = System.nanoTime(); // Tiempo del último frame
     private int fps = 0; // FPS calculado
     private JButton btnJugar; // Botón para iniciar o detener la carrera
+    private List<Globo> ganadores; // Lista de globos que han llegado a la meta
 
     public PanelDeCarrera() {
         globos = new ArrayList<>();
+        ganadores = new ArrayList<>();
         buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
         setLayout(null); // Usar un layout nulo para poder colocar el botón en cualquier lugar
 
@@ -58,7 +61,6 @@ class PanelDeCarrera extends JPanel {
                     }
                 }
             }
-
         });
 
         iniciarBolas();
@@ -67,6 +69,7 @@ class PanelDeCarrera extends JPanel {
     private void iniciarCarrera() {
         carreraEnCurso = true; // La carrera ha comenzado
         carreraTerminada = false; // La carrera no ha terminado
+        ganadores.clear(); // Limpiar la lista de ganadores
         globos.forEach(globo -> globo.setY(700)); // Reposicionar los globos a la posición inicial
         globos.forEach(Globo::start); // Iniciar cada globo (hilo)
     }
@@ -127,25 +130,45 @@ class PanelDeCarrera extends JPanel {
         g.setColor(Color.BLACK);
         g.drawString("FPS: " + fps, getWidth() - 60, getHeight() - 20);
 
+
         g2d.dispose();
     }
 
     private void verificarGanador() {
         for (Globo globo : globos) {
-            if (globo.getY() <= 0) { // Meta alcanzada
-                carreraTerminada = true;
-                detenerCarrera();
-                notificarGanador(globo);
-                break;
+            if (globo.getY() <= 0 && !ganadores.contains(globo)) { // Meta alcanzada
+                ganadores.add(globo); // Agregar al ganador
+                if (ganadores.size() == globos.size()) { // Si todos los globos han llegado
+                    carreraTerminada = true; // Finalizar la carrera
+                    mostrarPodio(); // Mostrar el podio
+                }
+                globo.detener(); // Detener el globo una vez haya llegado
             }
         }
     }
 
-    private void notificarGanador(Globo ganadora) {
+    private void mostrarPodio() {
         SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(this,
-                    "¡El globo de color " + obtenerNombreColor(ganadora.getColor()) + " ganó la carrera!",
-                    "Ganador", JOptionPane.INFORMATION_MESSAGE);
+            String podioMessage = "Podio:\n";
+
+            // Invertimos la lista de ganadores, el último será el primero
+            List<Globo> ganadoresInvertidos = new ArrayList<>(ganadores);
+            Collections.reverse(ganadoresInvertidos); // Invertimos el orden de la lista de ganadores
+
+            // Limitar la cantidad de ganadores a 3 (en caso de que haya menos de 3)
+            int cantidadGanadores = Math.min(ganadoresInvertidos.size(), 3);
+
+            for (int i = 0; i < cantidadGanadores; i++) {
+                String puesto = switch (i) {
+                    case 0 -> "Oro: ";
+                    case 1 -> "Plata: ";
+                    case 2 -> "Bronce: ";
+                    default -> " ";
+                };
+                podioMessage += puesto + obtenerNombreColor(ganadoresInvertidos.get(i).getColor()) + "\n";
+            }
+
+            JOptionPane.showMessageDialog(this, podioMessage, "Resultados del Podio", JOptionPane.INFORMATION_MESSAGE);
         });
     }
 
