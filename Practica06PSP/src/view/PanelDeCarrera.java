@@ -45,7 +45,7 @@ class PanelDeCarrera extends JPanel {
             public void mousePressed(MouseEvent e) {
                 for (Globo globo : globos) {
                     if (globo.contains(e.getPoint())) { // Verifica si se hizo clic dentro de un globo
-                        globo.detener(); // Detener el globo que fue clickeado
+                        globo.pausar();
                     }
                 }
             }
@@ -54,7 +54,7 @@ class PanelDeCarrera extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 for (Globo globo : globos) {
                     if (globo.contains(e.getPoint())) {
-                        globo.start();
+                        globo.reanudar();
                     }
                 }
             }
