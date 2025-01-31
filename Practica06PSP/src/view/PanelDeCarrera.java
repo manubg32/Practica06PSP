@@ -4,6 +4,8 @@ import model.Globo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +13,69 @@ import java.util.List;
 class PanelDeCarrera extends JPanel {
     private final List<Globo> globos; // Lista de bolas
     private boolean carreraTerminada = false; // Control de la carrera
+    private boolean carreraEnCurso = false; // Control de si la carrera está en curso o no
     private BufferedImage buffer; // Imagen en memoria para el doble buffer
     private int frames = 0; // Contador de frames
     private long lastTime = System.nanoTime(); // Tiempo del último frame
     private int fps = 0; // FPS calculado
+    private JButton btnJugar; // Botón para iniciar o detener la carrera
 
     public PanelDeCarrera() {
         globos = new ArrayList<>();
         buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
+        setLayout(null); // Usar un layout nulo para poder colocar el botón en cualquier lugar
+
+        // Crear el botón "Jugar"
+        btnJugar = new JButton("Jugar");
+        btnJugar.setBounds(150, 720, 80, 30); // Posicionar el botón
+        btnJugar.addActionListener(e -> {
+            if (carreraEnCurso) {
+                detenerCarrera(); // Detener la carrera
+                btnJugar.setText("Jugar"); // Cambiar el texto del botón a "Jugar"
+            } else {
+                iniciarCarrera(); // Iniciar la carrera
+                btnJugar.setText("Detener"); // Cambiar el texto del botón a "Detener"
+            }
+        });
+        add(btnJugar);
+
+        // Detectar clic en los globos
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                for (Globo globo : globos) {
+                    if (globo.contains(e.getPoint())) { // Verifica si se hizo clic dentro de un globo
+                        globo.detener(); // Detener el globo que fue clickeado
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                for (Globo globo : globos) {
+                    if (globo.contains(e.getPoint())) {
+                        globo.start();
+                    }
+                }
+            }
+
+        });
+
         iniciarBolas();
+    }
+
+    private void iniciarCarrera() {
+        carreraEnCurso = true; // La carrera ha comenzado
+        carreraTerminada = false; // La carrera no ha terminado
+        globos.forEach(globo -> globo.setY(700)); // Reposicionar los globos a la posición inicial
+        globos.forEach(Globo::start); // Iniciar cada globo (hilo)
+    }
+
+    private void detenerCarrera() {
+        carreraEnCurso = false; // La carrera ha terminado
+        for (Globo globo : globos) {
+            globo.detener(); // Detener cada globo
+        }
     }
 
     private void iniciarBolas() {
@@ -29,10 +85,7 @@ class PanelDeCarrera extends JPanel {
         globos.add(new Globo(250, 700, 30, Color.YELLOW));
         globos.add(new Globo(325, 700, 30, Color.ORANGE));
 
-        for (Globo globo : globos) {
-            globo.start();
-        }
-
+        // El hilo de actualización de la pantalla
         new Thread(() -> {
             while (!carreraTerminada) {
                 repaint(); // Redibujar el panel
@@ -70,27 +123,21 @@ class PanelDeCarrera extends JPanel {
 
         g.drawImage(buffer, 0, 0, null);
 
-        // Dibujar FPS en la esquina superior izquierda
+        // Dibujar FPS en la esquina inferior derecha
         g.setColor(Color.BLACK);
-        g.drawString("FPS: " + fps, 10, 20);
+        g.drawString("FPS: " + fps, getWidth() - 60, getHeight() - 20);
 
         g2d.dispose();
     }
 
     private void verificarGanador() {
         for (Globo globo : globos) {
-            if (globo.getY() <= 0) {
+            if (globo.getY() <= 0) { // Meta alcanzada
                 carreraTerminada = true;
                 detenerCarrera();
                 notificarGanador(globo);
                 break;
             }
-        }
-    }
-
-    private void detenerCarrera() {
-        for (Globo globo : globos) {
-            globo.detener();
         }
     }
 

@@ -33,6 +33,10 @@ public class Globo extends Thread{
         corriendo = false;
     }
 
+    public void setY(int y) {
+        this.y = y;
+
+    }
     // Métodos para obtener los datos de la bola
     public int getX() {
         return x;
@@ -49,4 +53,13 @@ public class Globo extends Thread{
     public Color getColor() {
         return color;
     }
+    public boolean contains(Point p) {
+        int cx = this.getX() + this.getTamaño() / 2;  // Centro del globo (X)
+        int cy = this.getY() + this.getTamaño() / 2;  // Centro del globo (Y)
+        int radius = this.getTamaño() / 2;            // Radio del globo (mitad del tamaño)
+
+        // Verifica si la distancia entre el punto y el centro del globo es menor o igual al radio
+        return p.distance(cx, cy) <= radius;
+    }
+
 }
