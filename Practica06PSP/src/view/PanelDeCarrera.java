@@ -16,17 +16,17 @@ class PanelDeCarrera extends JPanel {
     public PanelDeCarrera() {
         globos = new ArrayList<>();
         //buffer = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        buffer = new BufferedImage(800, 450, BufferedImage.TYPE_INT_ARGB);
+        buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
         iniciarBolas();
     }
 
     private void iniciarBolas() {
         // Crear varias bolas con posiciones y colores diferentes
-        globos.add(new Globo(0, 25, 30, Color.RED));
-        globos.add(new Globo(0, 100, 30, Color.BLUE));
-        globos.add(new Globo(0, 175, 30, Color.GREEN));
-        globos.add(new Globo(0, 250, 30, Color.YELLOW));
-        globos.add(new Globo(0, 325, 30, Color.ORANGE));
+        globos.add(new Globo(25, 700, 30, Color.RED));
+        globos.add(new Globo(100, 700, 30, Color.BLUE));
+        globos.add(new Globo(175, 700, 30, Color.GREEN));
+        globos.add(new Globo(250, 700, 30, Color.YELLOW));
+        globos.add(new Globo(325, 700, 30, Color.ORANGE));
 
 
         // Iniciar cada bola como un hilo independiente
@@ -86,7 +86,7 @@ class PanelDeCarrera extends JPanel {
 
     private void verificarGanador() {
         for (Globo globo : globos) {
-            if (globo.getX() >= 760) { //getWidth() - bola.getTamaño()) { // Meta alcanzada
+            if (globo.getY() <= 0) { //getWidth() - bola.getTamaño()) { // Meta alcanzada
                 carreraTerminada = true;
                 detenerCarrera();
                 notificarGanador(globo);

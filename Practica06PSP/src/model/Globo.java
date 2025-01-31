@@ -19,7 +19,7 @@ public class Globo extends Thread{
     @Override
     public void run() {
         while (corriendo && y < 800) { // Se mueve mientras no alcance el borde derecho
-            y += 3;
+            y -= 3;
             try {
                 Thread.sleep((int) (Math.random()*25+25)); // Pausa para simular el movimiento
             } catch (InterruptedException e) {

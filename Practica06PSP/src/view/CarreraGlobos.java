@@ -5,7 +5,7 @@ import javax.swing.*;
 public class CarreraGlobos extends JFrame{
     public CarreraGlobos() {
         setTitle("Carrera de Globos");
-        setSize(800, 450);
+        setSize(380, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
