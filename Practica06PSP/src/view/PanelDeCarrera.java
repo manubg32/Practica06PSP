@@ -1,15 +1,23 @@
 package view;
 
-import model.Globo;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+import model.Globo;
+import model.Techo;
 
 class PanelDeCarrera extends JPanel {
     private final List<Globo> globos; // Lista de bolas
@@ -21,8 +29,10 @@ class PanelDeCarrera extends JPanel {
     private int fps = 0; // FPS calculado
     private JButton btnJugar; // Botón para iniciar o detener la carrera
     private List<Globo> ganadores; // Lista de globos que han llegado a la meta
+    private Techo techo = new Techo(0);
 
     public PanelDeCarrera() {
+    	
         globos = new ArrayList<>();
         ganadores = new ArrayList<>();
         buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
@@ -136,7 +146,7 @@ class PanelDeCarrera extends JPanel {
 
     private void verificarGanador() {
         for (Globo globo : globos) {
-            if (globo.getY() <= 0 && !ganadores.contains(globo)) { // Meta alcanzada
+            if (globo.getY() <= techo.getAltura() && !ganadores.contains(globo)) { // Meta alcanzada
                 ganadores.add(globo); // Agregar al ganador
                 if (ganadores.size() == globos.size()) { // Si todos los globos han llegado
                     carreraTerminada = true; // Finalizar la carrera
