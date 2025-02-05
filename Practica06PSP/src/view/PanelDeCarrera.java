@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,18 @@ class PanelDeCarrera extends JPanel {
     private List<Globo> ganadores; // Lista de globos que han llegado a la meta
     private Techo techo = new Techo(0);
 
+    public static BufferedImage fondo = null;
+
     public PanelDeCarrera() {
+
+        // Cargar la imagen de fondo
+
+        try {
+            fondo = ImageIO.read(new File("Practica06PSP/src/resources/fondo.png")); // Ruta de la imagen PNG
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         globos = new ArrayList<>();
         ganadores = new ArrayList<>();
@@ -127,6 +139,11 @@ class PanelDeCarrera extends JPanel {
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, getWidth(), getHeight()); // Limpiar fondo
 
+        if (fondo != null) {
+            // Dibujar la imagen de fondo
+            g2d.drawImage(fondo, 0, 0, getWidth(), getHeight(), this); // Ajusta el fondo a toda la pantalla
+        }
+
         for (Globo globo : globos) {
             BufferedImage imagen = globo.getImagen();
             if (imagen != null) {
@@ -138,7 +155,7 @@ class PanelDeCarrera extends JPanel {
         }
 
         // FPS
-        g2d.setColor(Color.BLACK);
+        g2d.setColor(Color.WHITE);
         g2d.drawString("FPS: " + fps, getWidth() - 60, getHeight() - 20);
     }
 
@@ -174,7 +191,7 @@ class PanelDeCarrera extends JPanel {
                     case 2 -> "Bronce: ";
                     default -> " ";
                 };
-                podioMessage += puesto + obtenerNombreColor(ganadoresInvertidos.get(i).getImagen().toString()) + "\n";
+                podioMessage += puesto + obtenerNombreColor(ganadoresInvertidos.get(i).getRuta()) + "\n";
             }
 
             JOptionPane.showMessageDialog(this, podioMessage, "Resultados del Podio", JOptionPane.INFORMATION_MESSAGE);
@@ -182,7 +199,7 @@ class PanelDeCarrera extends JPanel {
     }
 
     private String obtenerNombreColor(String color) {
-        return color.substring(20);
+        return "globo " + color.substring(33);
     }
 
     // Méto.do para calcular los FPS
