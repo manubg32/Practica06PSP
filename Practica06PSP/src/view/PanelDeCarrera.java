@@ -7,14 +7,13 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 import model.Globo;
 import model.Techo;
@@ -32,7 +31,7 @@ class PanelDeCarrera extends JPanel {
     private Techo techo = new Techo(0);
 
     public PanelDeCarrera() {
-    	
+
         globos = new ArrayList<>();
         ganadores = new ArrayList<>();
         buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
@@ -88,15 +87,20 @@ class PanelDeCarrera extends JPanel {
         carreraEnCurso = false; // La carrera ha terminado
         for (Globo globo : globos) {
             globo.detener(); // Detener cada globo
+            globo.setY(700);
         }
     }
 
     private void iniciarBolas() {
-        globos.add(new Globo(25, 700, 30, Color.RED));
-        globos.add(new Globo(100, 700, 30, Color.BLUE));
-        globos.add(new Globo(175, 700, 30, Color.GREEN));
-        globos.add(new Globo(250, 700, 30, Color.YELLOW));
-        globos.add(new Globo(325, 700, 30, Color.ORANGE));
+        globos.add(new Globo(25, 700, 50, "Practica06PSP/src/resources/globoRojo.png"));
+        globos.add(new Globo(100, 700, 50, "Practica06PSP/src/resources/globoAzul.png"));
+        globos.add(new Globo(175, 700, 50, "Practica06PSP/src/resources/globoVerde.png"));
+        globos.add(new Globo(250, 700, 50, "Practica06PSP/src/resources/globoAmarillo.png"));
+        globos.add(new Globo(325, 700, 50, "Practica06PSP/src/resources/globoNaranja.png"));
+
+        System.out.println("Llamando a repaint()...");
+        repaint();
+
 
         // El hilo de actualización de la pantalla
         new Thread(() -> {
@@ -117,32 +121,27 @@ class PanelDeCarrera extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (buffer == null) {
-            buffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        }
-        Graphics2D g2d = buffer.createGraphics();
+        System.out.println("Repaint ejecutado.");
 
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, buffer.getWidth(), buffer.getHeight()); // Limpiar el fondo
-
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.fillRect(0, 0, getWidth(), getHeight()); // Limpiar fondo
 
         for (Globo globo : globos) {
-            g2d.setColor(Color.BLACK);
-            g2d.fillOval(globo.getX(), globo.getY(), globo.getTamaño(), globo.getTamaño());
-            g2d.setColor(globo.getColor());
-            g2d.fillOval(globo.getX() + 3, globo.getY() + 3, globo.getTamaño() - 7 , globo.getTamaño() - 7);
+            BufferedImage imagen = globo.getImagen();
+            if (imagen != null) {
+                System.out.println("Dibujando globo en: " + globo.getX() + ", " + globo.getY());
+                g2d.drawImage(imagen, globo.getX(), globo.getY(), globo.getTamaño(), globo.getTamaño(), null);
+            } else {
+                System.out.println("La imagen del globo es NULL.");
+            }
         }
 
-        g.drawImage(buffer, 0, 0, null);
-
-        // Dibujar FPS en la esquina inferior derecha
-        g.setColor(Color.BLACK);
-        g.drawString("FPS: " + fps, getWidth() - 60, getHeight() - 20);
-
-
-        g2d.dispose();
+        // FPS
+        g2d.setColor(Color.BLACK);
+        g2d.drawString("FPS: " + fps, getWidth() - 60, getHeight() - 20);
     }
+
 
     private void verificarGanador() {
         for (Globo globo : globos) {
@@ -175,23 +174,18 @@ class PanelDeCarrera extends JPanel {
                     case 2 -> "Bronce: ";
                     default -> " ";
                 };
-                podioMessage += puesto + obtenerNombreColor(ganadoresInvertidos.get(i).getColor()) + "\n";
+                podioMessage += puesto + obtenerNombreColor(ganadoresInvertidos.get(i).getImagen().toString()) + "\n";
             }
 
             JOptionPane.showMessageDialog(this, podioMessage, "Resultados del Podio", JOptionPane.INFORMATION_MESSAGE);
         });
     }
 
-    private String obtenerNombreColor(Color color) {
-        if (color.equals(Color.RED)) return "Rojo";
-        if (color.equals(Color.BLUE)) return "Azul";
-        if (color.equals(Color.GREEN)) return "Verde";
-        if (color.equals(Color.YELLOW)) return "Amarillo";
-        if (color.equals(Color.ORANGE)) return "Naranja";
-        return "Desconocido";
+    private String obtenerNombreColor(String color) {
+        return color.substring(20);
     }
 
-    // Método para calcular los FPS
+    // Méto.do para calcular los FPS
     private void calcularFPS() {
         long now = System.nanoTime();
         long deltaTime = now - lastTime;

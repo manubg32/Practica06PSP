@@ -1,21 +1,37 @@
 package model;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class Globo extends Thread {
     private final int x; // Posición X del globo
     private int y; // Posición Y del globo
     private final int tamaño; // Tamaño del globo
-    private final Color color; // Color del globo
+    private final String path; // Imagen del globo
+    private BufferedImage imagen;
     private boolean corriendo = true; // Control del hilo
     private boolean pausado = false; // Control de pausa
     private final Object lock = new Object(); // Bloqueo para sincronización
 
-    public Globo(int x, int y, int tamaño, Color color) {
+    public Globo(int x, int y, int tamaño, String ruta) {
         this.x = x;
         this.y = y;
         this.tamaño = tamaño;
-        this.color = color;
+        this.path = ruta;
+
+        File file = new File(ruta);
+        System.out.println("Intentando cargar: " + file.getAbsolutePath());
+        System.out.println("¿El archivo exidte?: " + file.exists());
+
+        try {
+            imagen = ImageIO.read(new File(ruta)); // Cargar la imagen solo una vez
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error cargando la imagen: " + ruta);
+        }
     }
 
     @Override
@@ -93,7 +109,9 @@ public class Globo extends Thread {
         return tamaño;
     }
 
-    public Color getColor() {
-        return color;
+    public String getRuta() {
+        return path;
     }
+
+    public BufferedImage getImagen() { return imagen; }
 }
