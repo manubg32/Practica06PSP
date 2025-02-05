@@ -3,7 +3,6 @@ package view;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -20,55 +19,49 @@ import model.Globo;
 import model.Techo;
 
 class PanelDeCarrera extends JPanel {
-    private final List<Globo> globos; // Lista de bolas
-    private boolean carreraTerminada = false; // Control de la carrera
-    private boolean carreraEnCurso = false; // Control de si la carrera está en curso o no
-    private BufferedImage buffer; // Imagen en memoria para el doble buffer
-    private int frames = 0; // Contador de frames
-    private long lastTime = System.nanoTime(); // Tiempo del último frame
-    private int fps = 0; // FPS calculado
-    private JButton btnJugar; // Botón para iniciar o detener la carrera
-    private List<Globo> ganadores; // Lista de globos que han llegado a la meta
+    private final List<Globo> globos;
+    private boolean carreraTerminada = false;
+    private boolean carreraEnCurso = false;
+    private BufferedImage buffer;
+    private int frames = 0;
+    private long lastTime = System.nanoTime();
+    private int fps = 0;
+    private JButton btnJugar;
+    private List<Globo> ganadores;
     private Techo techo = new Techo(0);
 
     public static BufferedImage fondo = null;
+    public static BufferedImage explosion = null;
 
     public PanelDeCarrera() {
-
-        // Cargar la imagen de fondo
-
         try {
-            fondo = ImageIO.read(new File("Practica06PSP/src/resources/fondo.png")); // Ruta de la imagen PNG
+            fondo = ImageIO.read(new File("Practica06PSP/src/resources/fondo.png"));
+            explosion = ImageIO.read(new File("Practica06PSP/src/resources/explosion.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
         globos = new ArrayList<>();
         ganadores = new ArrayList<>();
         buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
-        setLayout(null); // Usar un layout nulo para poder colocar el botón en cualquier lugar
+        setLayout(null);
 
-        // Crear el botón "Jugar"
         btnJugar = new JButton("Jugar");
-        btnJugar.setBounds(150, 720, 80, 30); // Posicionar el botón
+        btnJugar.setBounds(150, 720, 80, 30);
         btnJugar.addActionListener(e -> {
             if (carreraEnCurso) {
-                detenerCarrera(); // Detener la carrera
-                btnJugar.setText("Jugar"); // Cambiar el texto del botón a "Jugar"
+                setEnabled(false);
             } else {
-                iniciarCarrera(); // Iniciar la carrera
-                btnJugar.setText("Detener"); // Cambiar el texto del botón a "Detener"
+                iniciarCarrera();
             }
         });
         add(btnJugar);
 
-        // Detectar clic en los globos
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 for (Globo globo : globos) {
-                    if (globo.contains(e.getPoint())) { // Verifica si se hizo clic dentro de un globo
+                    if (globo.contains(e.getPoint())) {
                         globo.pausar();
                     }
                 }
@@ -88,20 +81,13 @@ class PanelDeCarrera extends JPanel {
     }
 
     private void iniciarCarrera() {
-        carreraEnCurso = true; // La carrera ha comenzado
-        carreraTerminada = false; // La carrera no ha terminado
-        ganadores.clear(); // Limpiar la lista de ganadores
-        globos.forEach(globo -> globo.setY(700)); // Reposicionar los globos a la posición inicial
-        globos.forEach(Globo::start); // Iniciar cada globo (hilo)
+        carreraEnCurso = true;
+        carreraTerminada = false;
+        ganadores.clear();
+        globos.forEach(globo -> globo.setY(700));
+        globos.forEach(Globo::start);
     }
 
-    private void detenerCarrera() {
-        carreraEnCurso = false; // La carrera ha terminado
-        for (Globo globo : globos) {
-            globo.detener(); // Detener cada globo
-            globo.setY(700);
-        }
-    }
 
     private void iniciarBolas() {
         globos.add(new Globo(25, 700, 50, "Practica06PSP/src/resources/globoRojo.png"));
@@ -110,18 +96,13 @@ class PanelDeCarrera extends JPanel {
         globos.add(new Globo(250, 700, 50, "Practica06PSP/src/resources/globoAmarillo.png"));
         globos.add(new Globo(325, 700, 50, "Practica06PSP/src/resources/globoNaranja.png"));
 
-        System.out.println("Llamando a repaint()...");
-        repaint();
-
-
-        // El hilo de actualización de la pantalla
         new Thread(() -> {
             while (!carreraTerminada) {
-                repaint(); // Redibujar el panel
-                verificarGanador(); // Verificar si alguna bola llegó a la meta
-                calcularFPS(); // Calcular el FPS
+                repaint();
+                verificarGanador();
+                calcularFPS();
                 try {
-                    Thread.sleep(1); // Actualización periódica
+                    Thread.sleep(1);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -132,43 +113,40 @@ class PanelDeCarrera extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        System.out.println("Repaint ejecutado.");
-
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, getWidth(), getHeight()); // Limpiar fondo
+        g2d.fillRect(0, 0, getWidth(), getHeight());
 
         if (fondo != null) {
-            // Dibujar la imagen de fondo
-            g2d.drawImage(fondo, 0, 0, getWidth(), getHeight(), this); // Ajusta el fondo a toda la pantalla
+            g2d.drawImage(fondo, 0, 0, getWidth(), getHeight(), this);
         }
 
         for (Globo globo : globos) {
-            BufferedImage imagen = globo.getImagen();
-            if (imagen != null) {
-                System.out.println("Dibujando globo en: " + globo.getX() + ", " + globo.getY());
-                g2d.drawImage(imagen, globo.getX(), globo.getY(), globo.getTamaño(), globo.getTamaño(), null);
+            if (ganadores.contains(globo)) {
+                g2d.drawImage(explosion, globo.getX(), techo.getAltura(), globo.getTamaño(), globo.getTamaño(), null);
             } else {
-                System.out.println("La imagen del globo es NULL.");
+                BufferedImage imagen = globo.getImagen();
+                if (imagen != null) {
+                    g2d.drawImage(imagen, globo.getX(), globo.getY(), globo.getTamaño(), globo.getTamaño(), null);
+                }
             }
         }
 
-        // FPS
         g2d.setColor(Color.WHITE);
         g2d.drawString("FPS: " + fps, getWidth() - 60, getHeight() - 20);
-    }
 
+    }
 
     private void verificarGanador() {
         for (Globo globo : globos) {
-            if (globo.getY() <= techo.getAltura() && !ganadores.contains(globo)) { // Meta alcanzada
-                ganadores.add(globo); // Agregar al ganador
+            if (globo.getY() <= techo.getAltura() && !ganadores.contains(globo)) {
+                ganadores.add(globo);
                 if (ganadores.size() == globos.size()) { // Si todos los globos han llegado
                     carreraTerminada = true; // Finalizar la carrera
                     mostrarPodio(); // Mostrar el podio
+                    btnJugar.setEnabled(true);
                 }
-                globo.detener(); // Detener el globo una vez haya llegado
+                globo.detener();
             }
         }
     }
@@ -198,22 +176,18 @@ class PanelDeCarrera extends JPanel {
         });
     }
 
-    private String obtenerNombreColor(String color) {
-        return "globo " + color.substring(33);
+    private String obtenerNombreColor(String ruta) {
+        return "globo " + ruta.substring(ruta.lastIndexOf("/") + 1, ruta.lastIndexOf(".png"));
     }
 
-    // Méto.do para calcular los FPS
     private void calcularFPS() {
         long now = System.nanoTime();
         long deltaTime = now - lastTime;
-
-        // Si ha pasado un segundo (1 segundo = 1,000,000,000 nanosegundos)
         if (deltaTime >= 1_000_000_000) {
             fps = frames;
             frames = 0;
             lastTime = now;
         }
-
         frames++;
     }
 }
