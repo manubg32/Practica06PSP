@@ -15,6 +15,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import controller.MusicPlayer;
 import model.Globo;
 import model.Techo;
 
@@ -30,12 +31,14 @@ class PanelDeCarrera extends JPanel {
     private JButton btnJugar;                                //Boton para comenzar la carrera
     private List<Globo> ganadores;                           //Lista de globos ganadores
     private Techo techo = new Techo(0);                //Techo que definira la altura
+    private MusicPlayer musicPlayer;
 
     public static BufferedImage fondo = null;                //Buffer que carga el fondo
     public static BufferedImage explosion = null;            //Buffer que carga la explosion
 
     public PanelDeCarrera() {
         try {
+            musicPlayer = new MusicPlayer("Practica06PSP/src/resources/musicajuego.wav"); //Cargamos musica inicial
             //Cargamos la imagen de fondo
             fondo = ImageIO.read(new File("Practica06PSP/src/resources/fondo.png"));
 
@@ -48,7 +51,7 @@ class PanelDeCarrera extends JPanel {
         //Inicializamos la lista de globos, ganadores y el buffer
         globos = new ArrayList<>();
         ganadores = new ArrayList<>();
-        buffer = new BufferedImage(380, 800, BufferedImage.TYPE_INT_ARGB);
+        buffer = new BufferedImage(400, 800, BufferedImage.TYPE_INT_ARGB);
         setLayout(null);
 
         //Damos atributos y localizamos el boton jugar
@@ -177,6 +180,10 @@ class PanelDeCarrera extends JPanel {
 
         //Con esto decimos que se inicialice en el momento de mostrarse para no consumir recursos
         SwingUtilities.invokeLater(() -> {
+            musicPlayer.stop(); //Detener la música de carrera
+            musicPlayer.play("Practica06PSP/src/resources/musicavictoria.wav"); //Iniciar música de podio
+
+
             String podioMessage = "Podio:\n";
 
             //Invertimos la lista de ganadores, ya que el ultimo es el primero

@@ -12,6 +12,9 @@ public class CarreraGlobos extends JFrame{
         setLocationRelativeTo(null);
         setResizable(false);
 
+        ImageIcon icon = new ImageIcon("Practica06PSP/src/resources/globoRojo.png");
+        setIconImage(icon.getImage());
+
         //Instanciamos el panel de carrera
         PanelDeCarrera panel = new PanelDeCarrera();
         add(panel); //Agregamos el panel al JFrame

@@ -63,7 +63,7 @@ public class Globo extends Thread {
             y -= 3; //Mover el globo hacia arriba
 
             //Si se mantiene dentro de los margenes de la pantalla movemos el globo a los lados para simular balanceo
-            if (x -2 > 0 && x + 3 < 380) {
+            if (x -2 > 0 && x + 6 < 400) {
                 x += r.nextInt(-2, 3);
             }
 
